@@ -4,6 +4,8 @@ import (
 	"crypto/ed25519"
 	"crypto/rand"
 	"encoding/base64"
+
+	"github.com/google/uuid"
 )
 
 type User struct {
@@ -26,4 +28,19 @@ func GenerateKeyPair() (string, string, error) {
 	privateKey := base64.StdEncoding.EncodeToString(priv)
 
 	return publicKey, privateKey, nil
+}
+
+func GenerateUser(phone string) (*User, string, error) {
+	publicKey, privateKey, err := GenerateKeyPair()
+	if err != nil {
+		return nil, "", err
+	}
+
+	user := &User{
+		ID:        uuid.NewString(),
+		Phone:     phone,
+		PublicKey: publicKey,
+	}
+
+	return user, privateKey, nil
 }
