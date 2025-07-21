@@ -1,3 +1,14 @@
-build/bin
-node_modules
-frontend/dist
+# Wails & Go build artifacts
+build/
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+
+# Local SQLite DB
+whisper.db
+
+# Editor/OS junk
+.DS_Store
+.vscode/
