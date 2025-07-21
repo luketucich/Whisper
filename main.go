@@ -2,7 +2,10 @@ package main
 
 import (
 	"embed"
+	"log"
 	"whisper/backend"
+
+	"github.com/joho/godotenv"
 
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
@@ -13,8 +16,17 @@ import (
 var assets embed.FS
 
 func main() {
+	// Load .env
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
+	// Initialize Twilio with .env variables
+	backend.InitTwilio()
+
 	// Initialize DB
-	err := backend.InitDatabase()
+	err = backend.InitDatabase()
 	if err != nil {
 		println("Failed to initialize database:", err.Error())
 		return

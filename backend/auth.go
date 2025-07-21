@@ -10,7 +10,7 @@ import (
 	"github.com/google/uuid"
 )
 
-var phoneRegex = regexp.MustCompile(`^\d{10,15}$`)
+var phoneRegex = regexp.MustCompile(`^\+\d{10,15}$`)
 
 type User struct {
 	ID        string `json:"id"`

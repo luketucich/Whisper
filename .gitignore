@@ -12,3 +12,5 @@ whisper.db
 # Editor/OS junk
 .DS_Store
 .vscode/
+
+.env

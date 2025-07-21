@@ -19,18 +19,19 @@ body {
   flex-direction: column;
   gap: 1rem;
   padding: 1.5rem;
+  min-width: 280px;
 }
 
 .phone-input {
-  padding: 0.4rem;
-  border: 1px solid #333;
+  padding: 0.5rem;
+  border: 1px solid #444;
   background: #222;
   color: #eee;
   border-radius: 4px;
 }
 
 .submit-button {
-  padding: 0.4rem;
+  padding: 0.5rem;
   background: #333;
   color: #eee;
   border: none;
@@ -44,10 +45,9 @@ body {
 
 .message {
   font-size: 0.9rem;
-  color: #aaa;
+  color: #ccc;
 }
 
 .prompt {
-  margin-bottom: 0.5rem;
   font-size: 1rem;
 }

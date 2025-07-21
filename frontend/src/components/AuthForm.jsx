@@ -1,47 +1,58 @@
 import { useState } from "react";
-import { RegisterOrLogin } from "../../wailsjs/go/main/App";
+import { Send2FACode } from "../../wailsjs/go/main/App";
+import TwoFactorForm from "./TwoFactorForm";
 
-function AuthForm() {
+const phoneRegex = /^\+\d{10,15}$/;
+
+function AuthForm({ onLogin }) {
   const [phone, setPhone] = useState("");
   const [message, setMessage] = useState("");
+  const [step, setStep] = useState("input");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const cleanedPhone = phone.replace(/\D/g, "");
-
-    if (cleanedPhone.length < 10 || cleanedPhone.length > 15) {
-      setMessage("Please enter a valid phone number (10–15 digits).");
+    if (!phoneRegex.test(phone)) {
+      setMessage("Invalid phone number. Use format: +12345678901");
       return;
     }
 
     try {
-      const user = await RegisterOrLogin(cleanedPhone);
-      setMessage(`✅ Welcome, user ID: ${user.id}`);
+      await Send2FACode(phone);
+      setStep("verify");
     } catch (err) {
-      setMessage(`❌ Error: ${err.message}`);
+      setMessage("Failed to send code.");
     }
   };
 
-  return (
-    <form onSubmit={handleSubmit} className="auth-form">
-      <p className="prompt">Enter your phone number to continue:</p>
-      <input
-        type="text"
-        placeholder="Phone number"
-        value={phone}
-        maxLength={15}
-        onChange={(e) => {
-          const value = e.target.value;
-          if (/^\d*$/.test(value)) {
-            setPhone(value);
-          }
-        }}
-        className="phone-input"
+  if (step === "verify") {
+    return (
+      <TwoFactorForm
+        phone={phone}
+        onBack={() => setStep("input")}
+        onLogin={onLogin}
       />
+    );
+  }
+
+  return (
+    <form className="auth-form" onSubmit={handleSubmit}>
+      <div className="prompt">Continue with your phone number:</div>
+
+      <input
+        className="phone-input"
+        type="text"
+        placeholder="+12345678901"
+        value={phone}
+        onChange={(e) => setPhone(e.target.value)}
+        maxLength={16}
+        required
+      />
+
       <button type="submit" className="submit-button">
         Continue
       </button>
+
       {message && <p className="message">{message}</p>}
     </form>
   );
