@@ -4,9 +4,13 @@ import (
 	"crypto/ed25519"
 	"crypto/rand"
 	"encoding/base64"
+	"fmt"
+	"regexp"
 
 	"github.com/google/uuid"
 )
+
+var phoneRegex = regexp.MustCompile(`^\d{10,15}$`)
 
 type User struct {
 	ID        string `json:"id"`
@@ -46,16 +50,19 @@ func GenerateUser(phone string) (*User, string, error) {
 }
 
 func RegisterOrLogin(phone string) (*User, string, error) {
+	if !phoneRegex.MatchString(phone) {
+		return nil, "", fmt.Errorf("invalid phone number")
+	}
+
 	user, err := FindUserByPhone(phone)
 	if err != nil {
 		return nil, "", err
 	}
 
 	if user != nil {
-		return user, "", nil // Login: no private key returned
+		return user, "", nil
 	}
 
-	// Register: generate + save user, return private key
 	newUser, privateKey, err := CreateUser(phone)
 	if err != nil {
 		return nil, "", err
