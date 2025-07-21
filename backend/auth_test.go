@@ -41,3 +41,34 @@ func TestGenerateUser(t *testing.T) {
 	t.Log("Public Key:", user.PublicKey)
 	t.Log("Private Key:", privKey)
 }
+
+func TestRegisterOrLogin(t *testing.T) {
+	// Init DB for test
+	err := InitDatabase()
+	if err != nil {
+		t.Fatalf("Failed to init database: %v", err)
+	}
+
+	// Use a fake phone number
+	phone := "+15551234567"
+
+	// First call: should register user
+	user, privateKey, err := RegisterOrLogin(phone)
+	if err != nil {
+		t.Fatalf("Register failed: %v", err)
+	}
+	if user == nil || privateKey == "" {
+		t.Fatal("Expected new user and private key")
+	}
+	t.Logf("Registered user: %+v", user)
+
+	// Second call: should log in user (no privateKey returned)
+	user2, privateKey2, err := RegisterOrLogin(phone)
+	if err != nil {
+		t.Fatalf("Login failed: %v", err)
+	}
+	if user2 == nil || privateKey2 != "" {
+		t.Fatal("Expected existing user and no private key")
+	}
+	t.Logf("Logged in user: %+v", user2)
+}

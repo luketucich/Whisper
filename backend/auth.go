@@ -44,3 +44,22 @@ func GenerateUser(phone string) (*User, string, error) {
 
 	return user, privateKey, nil
 }
+
+func RegisterOrLogin(phone string) (*User, string, error) {
+	user, err := FindUserByPhone(phone)
+	if err != nil {
+		return nil, "", err
+	}
+
+	if user != nil {
+		return user, "", nil // Login: no private key returned
+	}
+
+	// Register: generate + save user, return private key
+	newUser, privateKey, err := CreateUser(phone)
+	if err != nil {
+		return nil, "", err
+	}
+
+	return newUser, privateKey, nil
+}
