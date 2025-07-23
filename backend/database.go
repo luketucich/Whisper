@@ -89,3 +89,14 @@ func CreateUser(phone string) (*User, string, error) {
 
 	return user, privateKey, nil
 }
+
+func UpdateUsername(userID, username string) error {
+	query := `
+	UPDATE users
+	SET username = ?
+	WHERE id = ?
+	`
+
+	_, err := DB.Exec(query, username, userID)
+	return err
+}

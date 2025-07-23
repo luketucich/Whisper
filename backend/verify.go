@@ -27,6 +27,7 @@ func InitTwilio() {
 }
 
 func Send2FACode(phone string) error {
+
 	params := &openapi.CreateVerificationParams{}
 	params.SetTo(phone)
 	params.SetChannel("sms")
@@ -35,10 +36,12 @@ func Send2FACode(phone string) error {
 	if err != nil {
 		return fmt.Errorf("failed to send verification code: %w", err)
 	}
+
 	return nil
 }
 
 func Check2FACode(phone, code string) (bool, error) {
+
 	params := &openapi.CreateVerificationCheckParams{}
 	params.SetTo(phone)
 	params.SetCode(code)

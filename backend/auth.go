@@ -21,6 +21,11 @@ type User struct {
 	PublicKey string `json:"publicKey"`
 }
 
+type AuthResult struct {
+	User       *User  `json:"user"`
+	PrivateKey string `json:"privateKey"`
+}
+
 func GenerateKeyPair() (string, string, error) {
 	pub, priv, err := ed25519.GenerateKey(rand.Reader)
 
@@ -49,24 +54,34 @@ func GenerateUser(phone string) (*User, string, error) {
 	return user, privateKey, nil
 }
 
-func RegisterOrLogin(phone string) (*User, string, error) {
+func RegisterOrLogin(phone string) (*AuthResult, error) {
+
 	if !phoneRegex.MatchString(phone) {
-		return nil, "", fmt.Errorf("invalid phone number")
+		return nil, fmt.Errorf("invalid phone number")
 	}
 
 	user, err := FindUserByPhone(phone)
 	if err != nil {
-		return nil, "", err
+
+		return nil, err
 	}
 
 	if user != nil {
-		return user, "", nil
+
+		return &AuthResult{
+			User:       user,
+			PrivateKey: "",
+		}, nil
 	}
 
 	newUser, privateKey, err := CreateUser(phone)
 	if err != nil {
-		return nil, "", err
+
+		return nil, err
 	}
 
-	return newUser, privateKey, nil
+	return &AuthResult{
+		User:       newUser,
+		PrivateKey: privateKey,
+	}, nil
 }

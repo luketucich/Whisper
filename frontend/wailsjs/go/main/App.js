@@ -13,3 +13,7 @@ export function RegisterOrLogin(arg1) {
 export function Send2FACode(arg1) {
   return window['go']['main']['App']['Send2FACode'](arg1);
 }
+
+export function UpdateUsername(arg1, arg2) {
+  return window['go']['main']['App']['UpdateUsername'](arg1, arg2);
+}

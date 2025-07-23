@@ -18,9 +18,8 @@ func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
 }
 
-func (a *App) RegisterOrLogin(phone string) (*backend.User, error) {
-	user, _, err := backend.RegisterOrLogin(phone)
-	return user, err
+func (a *App) RegisterOrLogin(phone string) (*backend.AuthResult, error) {
+	return backend.RegisterOrLogin(phone)
 }
 
 func (a *App) Send2FACode(phone string) error {
@@ -34,4 +33,8 @@ func (a *App) Send2FACode(phone string) error {
 
 func (a *App) Check2FACode(phone, code string) (bool, error) {
 	return backend.Check2FACode(phone, code)
+}
+
+func (a *App) UpdateUsername(userID, username string) error {
+	return backend.UpdateUsername(userID, username)
 }
