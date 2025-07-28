@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "lucide-react": "^0.532.0",
+    "tweetnacl": "^1.0.3"
+  }
+}

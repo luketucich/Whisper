@@ -4,8 +4,12 @@ import {backend} from '../models';
 
 export function Check2FACode(arg1:string,arg2:string):Promise<boolean>;
 
+export function GenerateChallenge(arg1:string):Promise<string>;
+
 export function RegisterOrLogin(arg1:string):Promise<backend.AuthResult>;
 
 export function Send2FACode(arg1:string):Promise<void>;
 
 export function UpdateUsername(arg1:string,arg2:string):Promise<void>;
+
+export function VerifySignature(arg1:string,arg2:string):Promise<boolean>;

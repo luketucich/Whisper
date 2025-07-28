@@ -6,6 +6,10 @@ export function Check2FACode(arg1, arg2) {
   return window['go']['main']['App']['Check2FACode'](arg1, arg2);
 }
 
+export function GenerateChallenge(arg1) {
+  return window['go']['main']['App']['GenerateChallenge'](arg1);
+}
+
 export function RegisterOrLogin(arg1) {
   return window['go']['main']['App']['RegisterOrLogin'](arg1);
 }
@@ -16,4 +20,8 @@ export function Send2FACode(arg1) {
 
 export function UpdateUsername(arg1, arg2) {
   return window['go']['main']['App']['UpdateUsername'](arg1, arg2);
+}
+
+export function VerifySignature(arg1, arg2) {
+  return window['go']['main']['App']['VerifySignature'](arg1, arg2);
 }

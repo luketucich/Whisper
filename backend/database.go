@@ -2,6 +2,7 @@ package backend
 
 import (
 	"database/sql"
+	"log"
 
 	_ "modernc.org/sqlite"
 )
@@ -62,6 +63,34 @@ func FindUserByPhone(phone string) (*User, error) {
 	return &user, nil
 }
 
+func FindUserByID(userID string) (*User, error) {
+	query := `
+	SELECT id, username, phone, public_key, last_seen, is_online 
+	FROM users 
+	WHERE id = ?
+	`
+
+	var user User
+	err := DB.QueryRow(query, userID).Scan(
+		&user.ID,
+		&user.Username,
+		&user.Phone,
+		&user.PublicKey,
+		&user.LastSeen,
+		&user.IsOnline,
+	)
+
+	if err == sql.ErrNoRows {
+		return nil, nil
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &user, nil
+}
+
 func CreateUser(phone string) (*User, string, error) {
 	user, privateKey, err := GenerateUser(phone)
 
@@ -87,6 +116,7 @@ func CreateUser(phone string) (*User, string, error) {
 		return nil, "", err
 	}
 
+	log.Printf("User created: %s with phone %s", user.ID, user.Phone)
 	return user, privateKey, nil
 }
 

@@ -38,3 +38,11 @@ func (a *App) Check2FACode(phone, code string) (bool, error) {
 func (a *App) UpdateUsername(userID, username string) error {
 	return backend.UpdateUsername(userID, username)
 }
+
+func (a *App) GenerateChallenge(userID string) (string, error) {
+	return backend.GenerateChallenge(userID)
+}
+
+func (a *App) VerifySignature(userID, signature string) (bool, error) {
+	return backend.VerifySignature(userID, signature)
+}
