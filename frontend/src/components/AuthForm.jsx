@@ -1,4 +1,4 @@
-import { LoaderCircle } from "lucide-react";
+import { Key, LoaderCircle, Phone, ShieldCheck, User } from "lucide-react";
 import { useState } from "react";
 import nacl from "tweetnacl";
 import {
@@ -12,25 +12,36 @@ import {
 const phoneRegex = /^\+\d{10,15}$/;
 
 function AuthForm({ onLogin }) {
-  const [step, setStep] = useState("phone"); // "phone" | "verify" | "username" | "privateKey" | "signature"
+  const [step, setStep] = useState("phone");
+  const [animating, setAnimating] = useState(false);
+
   const [phone, setPhone] = useState("");
   const [code, setCode] = useState("");
   const [username, setUsername] = useState("");
   const [privateKey, setPrivateKey] = useState("");
-  const [inputKey, setInputKey] = useState(""); // for manual entry
+  const [inputKey, setInputKey] = useState("");
+
   const [verifying, setVerifying] = useState(false);
   const [user, setUser] = useState(null);
   const [message, setMessage] = useState("");
 
+  const transitionTo = (next) => {
+    setAnimating(true);
+    setTimeout(() => {
+      setStep(next);
+      setAnimating(false);
+    }, 400);
+  };
+
   const handlePhoneSubmit = async (e) => {
     e.preventDefault();
     if (!phoneRegex.test(phone)) {
-      setMessage("Invalid phone number. Use format: +12345678901");
+      setMessage("Please enter a valid phone number.");
       return;
     }
     try {
       await Send2FACode(phone);
-      setStep("verify");
+      transitionTo("verify");
     } catch {
       setMessage("Failed to send verification code.");
     }
@@ -40,15 +51,12 @@ function AuthForm({ onLogin }) {
     e.preventDefault();
     try {
       const result = await RegisterOrLogin(phone);
-      console.log("RegisterOrLogin result:", result);
-
       setUser(result.user);
-
       if (result.privateKey) {
         setPrivateKey(result.privateKey);
-        setStep("username");
+        transitionTo("username");
       } else {
-        setStep("signature");
+        transitionTo("signature");
       }
     } catch {
       setMessage("Verification failed.");
@@ -58,52 +66,51 @@ function AuthForm({ onLogin }) {
   const handleUsernameSubmit = async (e) => {
     e.preventDefault();
     if (!username.trim()) {
-      setMessage("Username cannot be empty.");
+      setMessage("Username is required.");
       return;
     }
     try {
       await UpdateUsername(user.id, username);
       setUser({ ...user, username });
-      setStep("privateKey");
+      transitionTo("privateKey");
     } catch {
-      setMessage("Failed to set username.");
+      setMessage("Failed to update username.");
     }
   };
 
   const handleVerifyKey = async () => {
     setVerifying(true);
     setMessage("");
-
     try {
       const challenge = await GenerateChallenge(user.id);
-
       const encoder = new TextEncoder();
       const messageBytes = encoder.encode(challenge);
       const keyBytes = Uint8Array.from(atob(inputKey), (c) => c.charCodeAt(0));
-
       const signatureBytes = nacl.sign.detached(messageBytes, keyBytes);
       const signature = btoa(String.fromCharCode(...signatureBytes));
-
       const verified = await VerifySignature(user.id, signature);
       if (!verified) {
-        setMessage("Signature verification failed. Check your private key.");
+        setMessage("Private key verification failed.");
         setVerifying(false);
         return;
       }
-
       localStorage.setItem("privateKey", inputKey);
       onLogin(user);
     } catch (err) {
-      console.error("Challenge verification error:", err);
-      setMessage("Verification error. Try again.");
+      setMessage("Verification error. Please try again.");
       setVerifying(false);
     }
   };
 
+  const formClass = `auth-form ${animating ? "fade-out" : "fade-in"}`;
+
   if (step === "phone") {
     return (
-      <form className="auth-form" onSubmit={handlePhoneSubmit}>
-        <div className="prompt">Continue with your phone number:</div>
+      <form className={formClass} onSubmit={handlePhoneSubmit}>
+        <div className="prompt">
+          <Phone size={16} style={{ marginRight: "0.5rem" }} />
+          Enter your phone number
+        </div>
         <input
           className="phone-input"
           type="text"
@@ -123,8 +130,11 @@ function AuthForm({ onLogin }) {
 
   if (step === "verify") {
     return (
-      <form className="auth-form" onSubmit={handleCodeSubmit}>
-        <div className="prompt">Enter the code sent to {phone}:</div>
+      <form className={formClass} onSubmit={handleCodeSubmit}>
+        <div className="prompt">
+          <ShieldCheck size={16} style={{ marginRight: "0.5rem" }} />
+          Enter the code sent to {phone}
+        </div>
         <input
           className="phone-input"
           type="text"
@@ -140,7 +150,7 @@ function AuthForm({ onLogin }) {
         <button
           type="button"
           className="submit-button"
-          onClick={() => setStep("phone")}
+          onClick={() => transitionTo("phone")}
         >
           Back
         </button>
@@ -151,8 +161,11 @@ function AuthForm({ onLogin }) {
 
   if (step === "username") {
     return (
-      <form className="auth-form" onSubmit={handleUsernameSubmit}>
-        <div className="prompt">Choose a username:</div>
+      <form className={formClass} onSubmit={handleUsernameSubmit}>
+        <div className="prompt">
+          <User size={16} style={{ marginRight: "0.5rem" }} />
+          Choose a username
+        </div>
         <input
           className="phone-input"
           type="text"
@@ -172,8 +185,11 @@ function AuthForm({ onLogin }) {
 
   if (step === "privateKey") {
     return (
-      <div className="auth-form">
-        <div className="prompt">Save your private key:</div>
+      <div className={formClass}>
+        <div className="prompt">
+          <Key size={16} style={{ marginRight: "0.5rem" }} />
+          Save your private key securely
+        </div>
         <textarea
           readOnly
           className="phone-input"
@@ -181,8 +197,7 @@ function AuthForm({ onLogin }) {
           rows={4}
         />
         <p className="message">
-          This key is required to access your account in the future. If lost,
-          you will need to reset your account.
+          You’ll need this key to access your account. Store it safely.
         </p>
         <button
           className="submit-button"
@@ -198,42 +213,34 @@ function AuthForm({ onLogin }) {
   }
 
   if (step === "signature") {
-    return (
-      <div>
-        {verifying ? (
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: "1rem",
-            }}
-          >
-            <div className="message">Verifying your private key...</div>
-            <LoaderCircle
-              style={{
-                width: "2rem",
-                height: "2rem",
-                animation: "spin 1s linear infinite",
-              }}
-            />
-          </div>
-        ) : (
-          <div className="auth-form">
-            <div className="prompt">Enter your private key:</div>
-            <textarea
-              className="phone-input"
-              value={inputKey}
-              onChange={(e) => setInputKey(e.target.value)}
-              rows={4}
-            />
-            <button className="submit-button" onClick={handleVerifyKey}>
-              Verify
-            </button>
-            {message && <p className="message">{message}</p>}
-          </div>
-        )}
+    return verifying ? (
+      <div className="auth-form fade-in">
+        <div className="message">Verifying private key...</div>
+        <LoaderCircle
+          style={{
+            width: "2rem",
+            height: "2rem",
+            animation: "spin 1s linear infinite",
+            margin: "0 auto",
+          }}
+        />
+      </div>
+    ) : (
+      <div className={formClass}>
+        <div className="prompt">
+          <Key size={16} style={{ marginRight: "0.5rem" }} />
+          Enter your private key
+        </div>
+        <textarea
+          className="phone-input"
+          value={inputKey}
+          onChange={(e) => setInputKey(e.target.value)}
+          rows={4}
+        />
+        <button className="submit-button" onClick={handleVerifyKey}>
+          Verify
+        </button>
+        {message && <p className="message">{message}</p>}
       </div>
     );
   }
