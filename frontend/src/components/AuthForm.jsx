@@ -1,4 +1,12 @@
-import { Key, LoaderCircle, Phone, ShieldCheck, User } from "lucide-react";
+import {
+  Eye,
+  EyeOff,
+  Key,
+  LoaderCircle,
+  Phone,
+  ShieldCheck,
+  User,
+} from "lucide-react";
 import { useState } from "react";
 import nacl from "tweetnacl";
 import {
@@ -10,16 +18,19 @@ import {
 } from "../../wailsjs/go/main/App";
 
 const phoneRegex = /^\+\d{10,15}$/;
+const storedPrivateKey = localStorage.getItem("privateKey");
+const storedPhone = localStorage.getItem("phone");
 
 function AuthForm({ onLogin }) {
   const [step, setStep] = useState("phone");
   const [animating, setAnimating] = useState(false);
 
-  const [phone, setPhone] = useState("");
+  const [phone, setPhone] = useState(storedPhone || "");
   const [code, setCode] = useState("");
   const [username, setUsername] = useState("");
   const [privateKey, setPrivateKey] = useState("");
-  const [inputKey, setInputKey] = useState("");
+  const [showPrivateKey, setShowPrivateKey] = useState(false);
+  const [inputKey, setInputKey] = useState(storedPrivateKey || "");
 
   const [verifying, setVerifying] = useState(false);
   const [user, setUser] = useState(null);
@@ -36,11 +47,14 @@ function AuthForm({ onLogin }) {
   const handlePhoneSubmit = async (e) => {
     e.preventDefault();
     if (!phoneRegex.test(phone)) {
-      setMessage("Please enter a valid phone number.");
+      setMessage(
+        "You must enter a valid phone number in the format +12345678901."
+      );
       return;
     }
     try {
       await Send2FACode(phone);
+      localStorage.setItem("phone", phone);
       transitionTo("verify");
     } catch {
       setMessage("Failed to send verification code.");
@@ -111,6 +125,7 @@ function AuthForm({ onLogin }) {
           <Phone size={16} style={{ marginRight: "0.5rem" }} />
           Enter your phone number
         </div>
+
         <input
           className="phone-input"
           type="text"
@@ -120,6 +135,7 @@ function AuthForm({ onLogin }) {
           maxLength={16}
           required
         />
+
         <button type="submit" className="submit-button">
           Continue
         </button>
@@ -231,12 +247,34 @@ function AuthForm({ onLogin }) {
           <Key size={16} style={{ marginRight: "0.5rem" }} />
           Enter your private key
         </div>
-        <textarea
-          className="phone-input"
-          value={inputKey}
-          onChange={(e) => setInputKey(e.target.value)}
-          rows={4}
-        />
+        <div style={{ position: "relative" }}>
+          <input
+            className="key-input"
+            type={showPrivateKey ? "text" : "password"}
+            value={inputKey}
+            onChange={(e) => setInputKey(e.target.value)}
+            style={{
+              paddingRight: "2.5rem",
+            }}
+          />
+          <button
+            type="button"
+            className="toggle-visibility-button"
+            onClick={() => setShowPrivateKey(!showPrivateKey)}
+            style={{
+              position: "absolute",
+              right: "0.5rem",
+              top: "50%",
+              transform: "translateY(-50%)",
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              color: "white",
+            }}
+          >
+            {showPrivateKey ? <EyeOff size={16} /> : <Eye size={16} />}
+          </button>
+        </div>
         <button className="submit-button" onClick={handleVerifyKey}>
           Verify
         </button>
